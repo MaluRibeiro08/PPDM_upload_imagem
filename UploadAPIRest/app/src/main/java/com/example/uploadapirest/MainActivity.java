@@ -1,14 +1,87 @@
 package com.example.uploadapirest;
 
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Gallery;
+import android.widget.ImageView;
 
-public class MainActivity extends AppCompatActivity {
+import java.io.IOException;
+
+public class MainActivity extends AppCompatActivity
+{
+
+    ImageView imgLivro;
+    EditText txtTituloLivro;
+    Button btnCadastrarLivro;
+    private final int GALLERY = 1;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        imgLivro = findViewById(R.id.img_livro);
+        txtTituloLivro = findViewById(R.id.txt_titulo);
+        btnCadastrarLivro = findViewById(R.id.btn_cadastrar_livro);
+
+        btnCadastrarLivro.setOnClickListener(
+            view ->
+            {
+                Intent intent = new Intent
+                                    (
+                                        Intent.ACTION_PICK, //o pick permite abrir uma parte especifica do smartphine
+                                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI //o priveder permite acessar funcionalidades do Sistema Operacional
+                                    );
+                intent.setType("image/*"); //tipo de arquivo a ser aceito
+
+                startActivityForResult(Intent.createChooser(intent, "Selecione a imagem do livro"), GALLERY);
+
+            }
+        );
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == this.RESULT_CANCELED)
+        {
+            return;
+        }
+        if (requestCode == GALLERY)
+        {
+            if (data != null) //veio alguma coisa?
+            {
+                Uri uri = data.getData(); //uri é responsável por manipular enderecos do recurso
+
+                try
+                {
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
+                    //esse bitmap representa o recurso de imagem vindo do local URI que foi convertido para um MediaStote
+
+                    imgLivro.setImageBitmap(bitmap);
+
+                    Log.d("IMAGEM", "Imagem alterada");
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                    Log.d("IMAGEM", e.getMessage());
+                }
+            }
+        }
+
     }
 }
