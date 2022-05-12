@@ -36,5 +36,8 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
-
+    //MODIFICAOES
+    implementation 'com.karumi:dexter:5.0.0' //contribui para o tráfego de dados da imagem específicamente
+    implementation 'com.squareup.retrofit2:retrofit:2.5.0'
+    implementation 'com.squareup.retrofit2:converter-scalars:2.5.0' //trafegas os dados do formulário para a API. Entra no lugar do GSON, pois é mais indicado p/ imagens
 }
