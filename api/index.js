@@ -1,5 +1,8 @@
 const express = require("express");
 const fs = require("fs");
+const Livro = require("./model/Livro");
+const modelLivro = require("./model/Livro")
+
 //const { off } = require("process");
 
 const app = express(); 
@@ -22,6 +25,9 @@ app.post('/testeUpload',
 
         let imageName = './uploads/' + Date.now().toString() + '.jpg' //parametros: onde sera salvo, o nome e a extensao
 
+        let titulo = req.body.titulo;
+
+
         console.log(arquivo_enviado); //base 64
         console.log(buffer);
 
@@ -39,8 +45,21 @@ app.post('/testeUpload',
                 }
             }
         )  
-        
-        res.status(200);
+
+        Livro.create
+        (
+            {
+                titulo: titulo,
+                imagem: imageName
+            }
+        ).then
+        (
+            ()=>
+            {
+                res.status(200);
+            }
+        );
+
 
     }
 )

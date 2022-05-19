@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Gallery;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.uploadapirest.remote.APIUtil;
@@ -113,7 +114,7 @@ public class MainActivity extends AppCompatActivity
 
         String file = Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.DEFAULT); //transforma o bitmap para string, representadpo pelo array de bytes
 
-        Call<String> call = imageInterface.uploadImage(file);
+        Call<String> call = imageInterface.uploadImage(file, txtTituloLivro.getText().toString());
 
         call.enqueue(
                 new Callback<String>() {
