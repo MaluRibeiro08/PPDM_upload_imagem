@@ -9,13 +9,24 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Gallery;
 import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.example.uploadapirest.remote.APIUtil;
+import com.example.uploadapirest.remote.ImageInterface;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -24,6 +35,8 @@ public class MainActivity extends AppCompatActivity
     EditText txtTituloLivro;
     Button btnCadastrarLivro;
     private final int GALLERY = 1;
+
+    ImageInterface imageInterface;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -35,12 +48,14 @@ public class MainActivity extends AppCompatActivity
         txtTituloLivro = findViewById(R.id.txt_titulo);
         btnCadastrarLivro = findViewById(R.id.btn_cadastrar_livro);
 
+        imageInterface = APIUtil.getAPIInterface();
+
         btnCadastrarLivro.setOnClickListener(
             view ->
             {
                 Intent intent = new Intent
                                     (
-                                        Intent.ACTION_PICK, //o pick permite abrir uma parte especifica do smartphine
+                                        Intent.ACTION_PICK, //o pick permite abrir uma parte especifica do smartphone
                                         android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI //o priveder permite acessar funcionalidades do Sistema Operacional
                                     );
                 intent.setType("image/*"); //tipo de arquivo a ser aceito
@@ -58,7 +73,7 @@ public class MainActivity extends AppCompatActivity
 
         if (resultCode == this.RESULT_CANCELED)
         {
-            return;
+            return; //para a execucao dxo metodo
         }
         if (requestCode == GALLERY)
         {
@@ -72,8 +87,11 @@ public class MainActivity extends AppCompatActivity
                     //esse bitmap representa o recurso de imagem vindo do local URI que foi convertido para um MediaStote
 
                     imgLivro.setImageBitmap(bitmap);
-
                     Log.d("IMAGEM", "Imagem alterada");
+
+
+                    //MANDANDO A IMAGEM - UPLOAD
+                        uploadImageRetrofit(bitmap);
                 }
                 catch (IOException e)
                 {
@@ -81,7 +99,39 @@ public class MainActivity extends AppCompatActivity
                     Log.d("IMAGEM", e.getMessage());
                 }
             }
-        }
+        }//if galeria
 
+    }//on actresul
+
+    private void uploadImageRetrofit(Bitmap bitmapImagem)
+    {
+        //pegar o bitmap e dividir em fila de bits pra enviar pedacinho a pedacinho
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            //cria um array de bytes para saida
+
+        bitmapImagem.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream); //formato, qualidade (100 máxima), bytearray
+
+        String file = Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.DEFAULT); //transforma o bitmap para string, representadpo pelo array de bytes
+
+        Call<String> call = imageInterface.uploadImage(file);
+
+        call.enqueue(
+                new Callback<String>() {
+                    @Override
+                    public void onResponse(Call<String> call, Response<String> response) {
+                        if (response.isSuccessful())
+                        {
+                            Toast.makeText(MainActivity.this, "Upload de imagem realizado!", Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<String> call, Throwable t)
+                    {
+                        Log.d("upload-erro", t.getMessage());
+                    }
+                }
+        );
     }
+
 }
